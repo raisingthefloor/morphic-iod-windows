@@ -18,6 +18,4 @@ namespace Morphic.IoD
     {
         public Task<IoDStatus> Run();
     }
-
-    }
 }
