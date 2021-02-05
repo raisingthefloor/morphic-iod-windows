@@ -20,12 +20,12 @@ namespace IOD_Tester
 
             Console.WriteLine("Program 1:");
 
-            var program1InstallStatus = await msiInstall.Run();
+            var program1InstallStatus = await msiInstall.RunAsync();
             Console.WriteLine("Program 1 install: " + program1InstallStatus.ToString());
 
             Console.WriteLine("Program 2:");
 
-            var program2InstallStatus = await exeInstall.Run();
+            var program2InstallStatus = await exeInstall.RunAsync();
             Console.WriteLine("Program 2 install: " + program2InstallStatus.ToString());
 
             Console.WriteLine("Install Complete!");

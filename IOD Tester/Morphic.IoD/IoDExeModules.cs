@@ -14,7 +14,7 @@ namespace Morphic.IoD
         private string filename;
         private string arguments;
 
-        public async Task<IoDStatus> Run()
+        public async Task<IoDStatus> RunAsync()
         {
             try
             {

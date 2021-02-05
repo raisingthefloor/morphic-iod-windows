@@ -14,7 +14,7 @@ namespace Morphic.IoD
             status = IoDStatus.OK;
         }
 
-        public async Task<IoDStatus> Run()
+        public async Task<IoDStatus> RunAsync()
         {
             if (active) return IoDStatus.InUse;
             active = true;

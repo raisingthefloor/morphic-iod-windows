@@ -16,6 +16,6 @@ namespace Morphic.IoD
 
     interface IoDModule
     {
-        public Task<IoDStatus> Run();
+        public Task<IoDStatus> RunAsync();
     }
 }
