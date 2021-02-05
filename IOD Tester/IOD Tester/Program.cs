@@ -10,22 +10,26 @@ namespace IOD_Tester
 {
     class Program
     {
-        static void Main(string[] args)
+        static async void Main(string[] args)
         {
             var basepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             var msipath = Path.Combine(basepath, "exe contents", "setup.msi");
+            var exepath = Path.Combine(basepath, "J2021.2011.16.400-any.exe");
 
-            var msiInstall = new IoDMSI(msipath);
+            var msiInstall = new IoDMsiInstaller(msipath);
+            var exeInstall = new IoDExeLauncher(exepath, "\\Silent");
 
-            Console.WriteLine("Installing Program");
+            Console.WriteLine("Installing Programs");
 
-            msiInstall.Install();
+            await msiInstall.Run();
+
+            await exeInstall.Run();
 
             Console.WriteLine("Install Complete!");
 
-            Console.WriteLine("Uninstalling");
+            //Console.WriteLine("Uninstalling");
 
-            msiInstall.Uninstall();
+            //msiInstall.Uninstall();
 
             Console.WriteLine("Complete!");
 

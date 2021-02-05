@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Morphic.IoD
 {
-    public enum InstallStatus
+    public enum IoDStatus
     {
         OK,
         MiscFailure,
@@ -14,9 +15,11 @@ namespace Morphic.IoD
         FileLocked,
         NoSpace
     }
+
     interface IoDModule
     {
-        public InstallStatus Install();
-        public InstallStatus Uninstall();
+        public Task<IoDStatus> Run();
+    }
+
     }
 }
