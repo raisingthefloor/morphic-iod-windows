@@ -1,7 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using Microsoft.Deployment.WindowsInstaller;
+using System;
 using System.Threading.Tasks;
-using Microsoft.Deployment.WindowsInstaller;
 
 namespace Morphic.IoD
 {
@@ -41,7 +40,7 @@ namespace Morphic.IoD
                     InstallLogModes.ShowDialog |
                     InstallLogModes.Terminate |
                     InstallLogModes.User |
-                    //InstallLogModes.Verbose |
+                    InstallLogModes.Verbose |
                     InstallLogModes.Warning
                     );
                 Installer.InstallProduct(msiFilepath, "");
