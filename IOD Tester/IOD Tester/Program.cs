@@ -26,7 +26,7 @@ namespace IOD_Tester
             var msiInstall = new IoDMsiInstaller(msipath);
             msiInstall.verbose = true;  //comment out to get the progress monitor to shut up
 
-            status = await msiInstall.Run();
+            status = await msiInstall.RunAsync();
 
             if (status == IoDStatus.OK)
             {
@@ -42,7 +42,7 @@ namespace IOD_Tester
             //var exepath = Path.Combine(basepath, "J2021.2011.16.400-any.exe");
             var exeInstall = new IoDExeLauncher(exepath, "/Silent");
 
-            status = await exeInstall.Run();
+            status = await exeInstall.RunAsync();
 
             if (status == IoDStatus.OK)
             {

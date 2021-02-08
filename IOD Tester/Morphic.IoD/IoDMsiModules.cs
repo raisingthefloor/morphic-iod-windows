@@ -16,7 +16,7 @@ namespace Morphic.IoD
 
         public bool verbose = false;
 
-        public async Task<IoDStatus> Run()
+        public async Task<IoDStatus> RunAsync()
         {
             if (active) return IoDStatus.ProgramInUse;
             active = true;
