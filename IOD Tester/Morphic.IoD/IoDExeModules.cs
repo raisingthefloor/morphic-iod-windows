@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Morphic.IoD
@@ -24,10 +25,32 @@ namespace Morphic.IoD
                     exe.StartInfo.Arguments = arguments;
                     exe.StartInfo.UseShellExecute = true;
                     exe.StartInfo.CreateNoWindow = true;
+                    //exe.StartInfo.RedirectStandardOutput = true;
+                    //exe.StartInfo.RedirectStandardError = true;
 
                     exe.Start();
                     exe.WaitForExit();
-                    return IoDStatus.OK;
+                    string? line = exe.StandardOutput.ReadLine();
+                    while(line != null)
+                    {
+                        Console.WriteLine(line);
+                        line = exe.StandardOutput.ReadLine();
+                    }
+                    line = exe.StandardError.ReadLine();
+                    while(line != null)
+                    {
+                        Console.WriteLine(line);
+                        line = exe.StandardError.ReadLine();
+                    }
+
+                    if (exe.ExitCode == 0)
+                    {
+                        return IoDStatus.OK;
+                    }
+                    else
+                    {
+                        return IoDStatus.MiscFailure;
+                    }
                 }
             }
             catch

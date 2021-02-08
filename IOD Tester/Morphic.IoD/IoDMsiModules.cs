@@ -14,14 +14,16 @@ namespace Morphic.IoD
             status = IoDStatus.OK;
         }
 
+        public bool verbose = false;
+
         public async Task<IoDStatus> Run()
         {
-            if (active) return IoDStatus.InUse;
+            if (active) return IoDStatus.ProgramInUse;
             active = true;
             status = IoDStatus.OK;
             try
             {
-                Installer.SetInternalUI(InstallUIOptions.Silent);
+                Installer.SetInternalUI(InstallUIOptions.UacOnly);
                 Installer.SetExternalUI(handler,
                     InstallLogModes.ActionData |
                     InstallLogModes.ActionStart |
@@ -79,12 +81,12 @@ namespace Morphic.IoD
 
         public IoDStatus Uninstall()
         {
-            if (active) return IoDStatus.InUse;
+            if (active) return IoDStatus.ProgramInUse;
             active = true;
             status = IoDStatus.OK;
             try
             {
-                Installer.SetInternalUI(InstallUIOptions.Silent);
+                Installer.SetInternalUI(InstallUIOptions.UacOnly);
                 Installer.SetExternalUI(handler,
                     InstallLogModes.ActionData |
                     InstallLogModes.ActionStart |
@@ -187,7 +189,7 @@ namespace Morphic.IoD
                     if (status <= IoDStatus.MiscFailure) status = IoDStatus.NoSpace;
                     break;
                 case InstallMessage.Progress:
-
+                    if (message != "" && verbose) Console.WriteLine(message);
                     break;
                 case InstallMessage.ResolveSource:
 

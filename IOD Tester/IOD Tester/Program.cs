@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Msix;
 
 namespace IOD_Tester
 {
@@ -13,26 +14,54 @@ namespace IOD_Tester
             var msipath = Path.Combine(basepath, "exe contents", "setup.msi");
             var exepath = Path.Combine(basepath, "J2021.2011.16.400-any.exe");
 
-            var msiInstall = new IoDMsiInstaller(msipath);
-            var exeInstall = new IoDExeLauncher(exepath, "/Silent");
+            IoDStatus status;
 
             Console.WriteLine("Installing Programs");
 
-            Console.WriteLine("Program 1:");
+            //IoDSystemRestorePoint.SetStartPoint("ayy");
 
-            await msiInstall.Run();
+            Console.WriteLine("MSI Install:");
 
-            Console.WriteLine("Program 2:");
+            //var msipath = Path.Combine(basepath, "Installers", "MSI", "CertDump.msi");
+            var msiInstall = new IoDMsiInstaller(msipath);
+            msiInstall.verbose = true;  //comment out to get the progress monitor to shut up
 
-            await exeInstall.Run();
+            status = await msiInstall.Run();
 
-            Console.WriteLine("Install Complete!");
+            if (status == IoDStatus.OK)
+            {
+                Console.WriteLine("Install Successful");
+            }
+            else
+            {
+                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
+            }
+
+            Console.WriteLine("EXE Install:");
+
+            //var exepath = Path.Combine(basepath, "J2021.2011.16.400-any.exe");
+            var exeInstall = new IoDExeLauncher(exepath, "/Silent");
+
+            status = await exeInstall.Run();
+
+            if (status == IoDStatus.OK)
+            {
+                Console.WriteLine("Install Successful");
+            }
+            else
+            {
+                Console.WriteLine("Installer Failed, Error: " + status.inEnglish());
+            }
+
+            //IoDSystemRestorePoint.SetEndPoint("lmao");
 
             //Console.WriteLine("Uninstalling");
 
             //msiInstall.Uninstall();
 
             Console.WriteLine("Complete!");
+
+            //IoDSystemRestorePoint.LoadPoint("ayy");
 
             return;
         }
