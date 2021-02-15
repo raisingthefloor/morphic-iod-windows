@@ -31,6 +31,7 @@ namespace Morphic.IoD
 #nullable enable
                     exe.Start();
                     exe.WaitForExit();
+                    /*
                     string? line = exe.StandardOutput.ReadLine();
                     while(line != null)
                     {
@@ -42,7 +43,7 @@ namespace Morphic.IoD
                     {
                         Console.WriteLine(line);
                         line = exe.StandardError.ReadLine();
-                    }
+                    }*/
 #nullable disable
                     if (exe.ExitCode == 0)
                     {
