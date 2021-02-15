@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Msix;
+using System.Management;
 
 namespace IOD_Tester
 {
@@ -27,6 +27,23 @@ namespace IOD_Tester
             msiInstall.verbose = true;  //comment out to get the progress monitor to shut up
 
             status = await msiInstall.RunAsync();
+
+            if (status == IoDStatus.OK)
+            {
+                Console.WriteLine("Install Successful");
+            }
+            else
+            {
+                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
+            }
+
+            Console.WriteLine("MSIX Test:");
+
+            var msixpath = Path.Combine(basepath, "Installers", "MSIX", "torrex.msix");
+            var msixInstall = new IoDMsiXInstaller(msixpath);
+            msixInstall.verbose = true;
+
+            status = await msixInstall.RunAsync();
 
             if (status == IoDStatus.OK)
             {

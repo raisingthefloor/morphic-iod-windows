@@ -28,6 +28,7 @@ namespace Morphic.IoD
                     //exe.StartInfo.RedirectStandardOutput = true;
                     //exe.StartInfo.RedirectStandardError = true;
 
+#nullable enable
                     exe.Start();
                     exe.WaitForExit();
                     string? line = exe.StandardOutput.ReadLine();
@@ -42,7 +43,7 @@ namespace Morphic.IoD
                         Console.WriteLine(line);
                         line = exe.StandardError.ReadLine();
                     }
-
+#nullable disable
                     if (exe.ExitCode == 0)
                     {
                         return IoDStatus.OK;
@@ -57,6 +58,11 @@ namespace Morphic.IoD
             {
                 return IoDStatus.MiscFailure;
             }
+        }
+
+        public double getProgress()
+        {
+            return -1.0;
         }
     }
 }

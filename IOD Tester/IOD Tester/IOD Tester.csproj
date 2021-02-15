@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <PackageReference Include="7-Zip.CommandLine" Version="18.1.0" />
-    <PackageReference Include="Microsoft.Msix.Utils" Version="1.0.210112002" />
     <PackageReference Include="System.Management" Version="5.0.0" />
   </ItemGroup>
 

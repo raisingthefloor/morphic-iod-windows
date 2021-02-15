@@ -42,5 +42,6 @@ namespace Morphic.IoD
     interface IoDModule
     {
         public Task<IoDStatus> RunAsync();
+        public double getProgress();
     }
 }

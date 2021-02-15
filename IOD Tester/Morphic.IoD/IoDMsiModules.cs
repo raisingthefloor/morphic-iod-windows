@@ -79,6 +79,11 @@ namespace Morphic.IoD
             return status;
         }
 
+        public double getProgress()
+        {
+            return 100.0 * progressValue;
+        }
+
         public IoDStatus Uninstall()
         {
             if (active) return IoDStatus.ProgramInUse;
@@ -147,7 +152,7 @@ namespace Morphic.IoD
         private ExternalUIRecordHandler handler;
         private IoDStatus status;
 
-        public double progressValue;
+        private double progressValue;
         private int progressTotal;
         private int progressCompleted;
         private int progressStep;
