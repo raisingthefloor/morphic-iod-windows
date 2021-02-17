@@ -181,10 +181,7 @@ namespace Morphic.IoD
                     }
                     break;
                 case InstallMessage.ActionStart:
-                    if(this.enableActionData)
-                    {
-                        this.enableActionData = false;
-                    }
+                    this.enableActionData = false;
                     break;
                 case InstallMessage.CommonData:
 

@@ -48,15 +48,18 @@ namespace Morphic.IoD
                 {
                     case Windows.Foundation.AsyncStatus.Canceled:
                         status = IoDStatus.ManualHalt;
+                        Console.WriteLine("Error Code: " + info.ErrorCode);
                         break;
                     case Windows.Foundation.AsyncStatus.Completed:
                         status = IoDStatus.OK;
                         break;
                     case Windows.Foundation.AsyncStatus.Error:
                         status = IoDStatus.MiscFailure;
+                        Console.WriteLine("Error Code: " + info.ErrorCode);
                         break;
                     case Windows.Foundation.AsyncStatus.Started:
                         status = IoDStatus.MiscFailure; //not sure how this would happen
+                        Console.WriteLine("Error Code: " + info.ErrorCode);
                         break;
                 }
                 done = true;
