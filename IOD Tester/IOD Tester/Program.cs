@@ -20,6 +20,8 @@ namespace IOD_Tester
 
             //IoDSystemRestorePoint.SetStartPoint("ayy");
 
+            /*
+
             Console.WriteLine("MSI Install:");
 
             //var msipath = Path.Combine(basepath, "Installers", "MSI", "CertDump.msi");
@@ -35,12 +37,17 @@ namespace IOD_Tester
             else
             {
                 Console.WriteLine("Installer Failed, Error " + status.inEnglish());
-            }
+            }*/
 
-            Console.WriteLine("MSIX Test:");
+            string msixpath;
+            IoDMsiXInstaller msixInstall;
 
-            var msixpath = Path.Combine(basepath, "Installers", "MSIX", "torrex.msix");
-            var msixInstall = new IoDMsiXInstaller(msixpath);
+            Console.WriteLine("MSIX Tests:");
+
+            Console.WriteLine("ModernFlyouts:");
+
+            msixpath = Path.Combine(basepath, "Installers", "MSIX", "ModernFlyouts.msixbundle");
+            msixInstall = new IoDMsiXInstaller(msixpath);
             msixInstall.verbose = true;
 
             status = await msixInstall.RunAsync();
@@ -53,6 +60,42 @@ namespace IOD_Tester
             {
                 Console.WriteLine("Installer Failed, Error " + status.inEnglish());
             }
+
+            Console.WriteLine("Notepads:");
+
+            msixpath = Path.Combine(basepath, "Installers", "MSIX", "Notepads.msixbundle");
+            msixInstall = new IoDMsiXInstaller(msixpath);
+            msixInstall.verbose = true;
+
+            status = await msixInstall.RunAsync();
+
+            if (status == IoDStatus.OK)
+            {
+                Console.WriteLine("Install Successful");
+            }
+            else
+            {
+                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
+            }
+
+            Console.WriteLine("Torrex:");
+
+            msixpath = Path.Combine(basepath, "Installers", "MSIX", "Torrex.msix");
+            msixInstall = new IoDMsiXInstaller(msixpath);
+            msixInstall.verbose = true;
+
+            status = await msixInstall.RunAsync();
+
+            if (status == IoDStatus.OK)
+            {
+                Console.WriteLine("Install Successful");
+            }
+            else
+            {
+                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
+            }
+
+            /*
 
             Console.WriteLine("EXE Install:");
 
@@ -68,7 +111,7 @@ namespace IOD_Tester
             else
             {
                 Console.WriteLine("Installer Failed, Error: " + status.inEnglish());
-            }
+            }*/
 
             //IoDSystemRestorePoint.SetEndPoint("lmao");
 
@@ -77,6 +120,10 @@ namespace IOD_Tester
             //msiInstall.Uninstall();
 
             Console.WriteLine("Complete!");
+
+            Console.WriteLine("Press any key to exit:");
+
+            Console.ReadKey();
 
             //IoDSystemRestorePoint.LoadPoint("ayy");
 
