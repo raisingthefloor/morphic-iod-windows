@@ -18,7 +18,7 @@ namespace IOD_Tester
 
             Console.WriteLine("Installing Programs");
 
-            //IoDSystemRestorePoint.SetStartPoint("ayy");
+            IoDSystemRestorePoint.SetStartPoint("Morphic Restore Point");
 
             /*
 
