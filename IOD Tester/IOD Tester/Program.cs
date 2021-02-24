@@ -16,9 +16,26 @@ namespace IOD_Tester
 
             IoDStatus status;
 
-            Console.WriteLine("Installing Programs");
+            Console.WriteLine("Setting Restore Point:");
 
-            IoDSystemRestorePoint.SetStartPoint("Morphic Restore Point");
+            IoDSystemRestorePoint.EnableMultiPointRestore();
+
+            if (IoDSystemRestorePoint.SetStartPoint("Morphic Start Point"))
+            {
+                Console.WriteLine("Restore Point Set Successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Restore Point Failed. Please Try Again.");
+
+                Console.WriteLine("Press Enter to Exit:");
+
+                Console.ReadKey();
+
+                return;
+            }
+
+            Console.WriteLine("Installing Programs:");
 
             /*
 
@@ -61,6 +78,8 @@ namespace IOD_Tester
                 Console.WriteLine("Installer Failed, Error " + status.inEnglish());
             }
 
+            IoDSystemRestorePoint.SetStartPoint("Morphic Pre-Notepads");
+
             Console.WriteLine("Notepads:");
 
             msixpath = Path.Combine(basepath, "Installers", "MSIX", "Notepads.msixbundle");
@@ -78,6 +97,8 @@ namespace IOD_Tester
                 Console.WriteLine("Installer Failed, Error " + status.inEnglish());
             }
 
+            IoDSystemRestorePoint.SetStartPoint("Morphic Pre-Torrex");
+
             Console.WriteLine("Torrex:");
 
             msixpath = Path.Combine(basepath, "Installers", "MSIX", "Torrex.msix");
@@ -94,6 +115,8 @@ namespace IOD_Tester
             {
                 Console.WriteLine("Installer Failed, Error " + status.inEnglish());
             }
+
+            IoDSystemRestorePoint.SetStartPoint("Morphic After MSIXs");
 
             /*
 
@@ -119,13 +142,22 @@ namespace IOD_Tester
 
             //msiInstall.Uninstall();
 
+            Console.WriteLine("Activating System Restore");
+
+            if (IoDSystemRestorePoint.Restore("Morphic Start Point"))
+            {
+                Console.WriteLine("Restore Activation Successful, Restart Computer to Activate System Restore");
+            }
+            else
+            {
+                Console.WriteLine("System Restore Activation Failed.");
+            }
+
             Console.WriteLine("Complete!");
 
-            Console.WriteLine("Press any key to exit:");
+            Console.WriteLine("Press Enter to Exit:");
 
             Console.ReadKey();
-
-            //IoDSystemRestorePoint.LoadPoint("ayy");
 
             return;
         }
