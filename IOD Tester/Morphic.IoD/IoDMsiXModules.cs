@@ -6,9 +6,9 @@ using Windows.Management.Deployment;
 
 namespace Morphic.IoD
 {
-    public class IoDMsiXInstaller : IoDModule
+    public class IoDMsiXInstaller
     {
-        public IoDMsiXInstaller(string filepath)
+        public IoDMsiXInstaller(string filepath, int waitTimer = 1000)
         {
             try
             {
@@ -18,18 +18,27 @@ namespace Morphic.IoD
             {
                 badparams = true;
             }
-            status = IoDStatus.OK;
             percentProgress = 0.0;
             verbose = false;
+            maxWait = waitTimer;
         }
 
-        public async Task<IoDStatus> RunAsync()
+        public enum InstallError
         {
+            MiscFailure,
+            ProgramInUse,
+            BadParams,
+            ManualHalt
+        }
+
+        public async Task<IMorphicResult<bool, InstallError>> InstallAsync()
+        {
+            error = false;
             done = false;
-            status = IoDStatus.ProgramInUse;
+            status = InstallError.ProgramInUse;
             if(badparams)
             {
-                return IoDStatus.BadParams;
+                return new MorphicError<bool, InstallError>(InstallError.BadParams);
             }
             PackageManager pm = new PackageManager();
             var package = pm.AddPackageAsync(path, null, DeploymentOptions.ForceApplicationShutdown);
@@ -47,18 +56,20 @@ namespace Morphic.IoD
                 switch (endStatus)
                 {
                     case Windows.Foundation.AsyncStatus.Canceled:
-                        status = IoDStatus.ManualHalt;
+                        status = InstallError.ManualHalt;
+                        error = true;
                         Console.WriteLine("Error Code: " + info.ErrorCode);
                         break;
                     case Windows.Foundation.AsyncStatus.Completed:
-                        status = IoDStatus.OK;
                         break;
                     case Windows.Foundation.AsyncStatus.Error:
-                        status = IoDStatus.MiscFailure;
+                        status = InstallError.MiscFailure;
+                        error = true;
                         Console.WriteLine("Error Code: " + info.ErrorCode);
                         break;
                     case Windows.Foundation.AsyncStatus.Started:
-                        status = IoDStatus.MiscFailure; //not sure how this would happen
+                        status = InstallError.MiscFailure; //not sure how this would happen
+                        error = true;
                         Console.WriteLine("Error Code: " + info.ErrorCode);
                         break;
                 }
@@ -68,7 +79,14 @@ namespace Morphic.IoD
             {
                 await Task.Delay(10);
             }
-            return status;
+            if(error)
+            {
+                return new MorphicError<bool, InstallError>(status);
+            }
+            else
+            {
+                return new MorphicSuccess<bool, InstallError>(true);
+            }
         }
 
         public double getProgress()
@@ -78,9 +96,12 @@ namespace Morphic.IoD
 
         public bool verbose;
         private bool done;
-        private IoDStatus status;
+        private bool error;
+        private InstallError status;
         private double percentProgress;
         private Uri path;
         private bool badparams = false;
+        private int maxWait;
+        private int currWait;
     }
 }

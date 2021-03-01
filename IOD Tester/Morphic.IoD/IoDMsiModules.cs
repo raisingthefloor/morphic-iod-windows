@@ -4,23 +4,30 @@ using System.Threading.Tasks;
 
 namespace Morphic.IoD
 {
-    public class IoDMsiInstaller : IoDModule
+    public class IoDMsiInstaller
     {
         public IoDMsiInstaller(string msiFile)
         {
             active = false;
             msiFilepath = msiFile;
             handler = UIMonitor;
-            status = IoDStatus.OK;
         }
 
         public bool verbose = false;
 
-        public async Task<IoDStatus> RunAsync()
+        public enum InstallError
         {
-            if (active) return IoDStatus.ProgramInUse;
+            ProgramInUse,
+            BadParams,
+            ManualHalt,
+            MiscFailure,
+            OutOfSpace
+        }
+        public IMorphicResult<bool, InstallError> Install()
+        {
+            if (active) return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.ProgramInUse);
             active = true;
-            status = IoDStatus.OK;
+            fail = false;
             try
             {
                 Installer.SetInternalUI(InstallUIOptions.Silent);
@@ -49,34 +56,33 @@ namespace Morphic.IoD
             }
             catch (BadQuerySyntaxException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.BadParams;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.BadParams);
             }
             catch (InstallCanceledException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.ManualHalt;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.ManualHalt);
             }
             catch (InvalidHandleException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.BadParams;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.BadParams);
             }
             catch (InstallerException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.MiscFailure;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.MiscFailure);
             }
             active = false;
-            return status;
+            if(fail)
+            {
+                return IMorphicResult<bool, InstallError>.ErrorResult(failstate);
+            }
+            else
+            {
+                return IMorphicResult<bool, InstallError>.SuccessResult(true);
+            }
         }
 
         public double getProgress()
@@ -84,11 +90,11 @@ namespace Morphic.IoD
             return 100.0 * progressValue;
         }
 
-        public IoDStatus Uninstall()
+        public IMorphicResult<bool, InstallError> Uninstall()
         {
-            if (active) return IoDStatus.ProgramInUse;
+            if (active) return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.ProgramInUse);
             active = true;
-            status = IoDStatus.OK;
+            fail = false;
             try
             {
                 Installer.SetInternalUI(InstallUIOptions.Silent);
@@ -117,40 +123,40 @@ namespace Morphic.IoD
             }
             catch (BadQuerySyntaxException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.BadParams;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.BadParams);
             }
             catch (InstallCanceledException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.ManualHalt;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.ManualHalt);
             }
             catch (InvalidHandleException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.BadParams;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.BadParams);
             }
             catch (InstallerException)
             {
-                if (status <= IoDStatus.MiscFailure)
-                {
-                    status = IoDStatus.MiscFailure;
-                }
+                active = false;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.MiscFailure);
             }
             active = false;
-            return status;
+            if (fail)
+            {
+                return IMorphicResult<bool, InstallError>.ErrorResult(failstate);
+            }
+            else
+            {
+                return IMorphicResult<bool, InstallError>.SuccessResult(true);
+            }
         }
 
         private bool active;
         private string msiFilepath;
         private ExternalUIRecordHandler handler;
-        private IoDStatus status;
+        private bool fail;
+        private InstallError failstate;
 
         private double progressValue;
         private int progressTotal;
@@ -191,7 +197,11 @@ namespace Morphic.IoD
                     break;
                 case InstallMessage.FatalExit:
                     Console.WriteLine(messageRecord.ToString());
-                    if (status <= IoDStatus.MiscFailure) status = IoDStatus.MiscFailure;
+                    if (!fail)
+                    {
+                        fail = true;
+                        failstate = InstallError.MiscFailure;
+                    }
                     break;
                 case InstallMessage.FilesInUse:
                     Console.WriteLine("Processes are open that need to be shut down");
@@ -211,7 +221,8 @@ namespace Morphic.IoD
                     break;
                 case InstallMessage.OutOfDiskSpace:
                     Console.WriteLine("Insufficient disk space");
-                    if (status <= IoDStatus.MiscFailure) status = IoDStatus.NoSpace;
+                    fail = true;
+                    failstate = InstallError.OutOfSpace;
                     break;
                 case InstallMessage.Progress:
                     TrackProgress(messageRecord);

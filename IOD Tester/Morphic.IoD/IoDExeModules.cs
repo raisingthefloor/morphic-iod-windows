@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Morphic.IoD
 {
-    public class IoDExeLauncher : IoDModule
+    public class IoDExeLauncher
     {
         public IoDExeLauncher(string filename, string arguments)
         {
@@ -15,7 +15,11 @@ namespace Morphic.IoD
         private string filename;
         private string arguments;
 
-        public async Task<IoDStatus> RunAsync()
+        public enum InstallError
+        {
+            MiscError
+        }
+        public async Task<IMorphicResult<bool, InstallError>> Install()
         {
             try
             {
@@ -47,23 +51,18 @@ namespace Morphic.IoD
 #nullable disable
                     if (exe.ExitCode == 0)
                     {
-                        return IoDStatus.OK;
+                        return IMorphicResult<bool, InstallError>.SuccessResult(true);
                     }
                     else
                     {
-                        return IoDStatus.MiscFailure;
+                        return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.MiscError);
                     }
                 }
             }
             catch
             {
-                return IoDStatus.MiscFailure;
+                return IMorphicResult<bool, InstallError>.ErrorResult(InstallError.MiscError);
             }
-        }
-
-        public double getProgress()
-        {
-            return -1.0;
         }
     }
 }

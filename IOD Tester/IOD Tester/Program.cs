@@ -14,8 +14,6 @@ namespace IOD_Tester
             var msipath = Path.Combine(basepath, "exe contents", "setup.msi");
             var exepath = Path.Combine(basepath, "J2021.2011.16.400-any.exe");
 
-            IoDStatus status;
-
             Console.WriteLine("Setting Restore Point:");
 
             IoDSystemRestorePoint.EnableMultiPointRestore();
@@ -61,59 +59,42 @@ namespace IOD_Tester
 
             Console.WriteLine("MSIX Tests:");
 
-            Console.WriteLine("ModernFlyouts:");
-
-            msixpath = Path.Combine(basepath, "Installers", "MSIX", "ModernFlyouts.msixbundle");
-            msixInstall = new IoDMsiXInstaller(msixpath);
-            msixInstall.verbose = true;
-
-            status = await msixInstall.RunAsync();
-
-            if (status == IoDStatus.OK)
+            string[,] names = new string[,]
             {
-                Console.WriteLine("Install Successful");
-            }
-            else
+                {"AppInstallerFileBuilder", "AppInstallerFileBuilder.msix" },
+                {"EarTrumpet", "EarTrumpet.appxbundle" },
+                {"Files", "Files.msixbundle" },
+                {"ModernFlyouts", "ModernFlyouts.msixbundle" },
+                {"MSIX Commander", "MSIX Commander.msix" },
+                {"MSIX Hero", "MSIX Hero.msix" },
+                {"Notepads", "Notepads.msixbundle" },
+                {"Picard", "Picard.msix" },
+                {"PowerShell", "PowerShell.msix" },
+                {"PowerToys", "PowerToys.msix" },
+                {"Presence Light", "PresenceLight.appxbundle" },
+                {"Strix Music", "StrixMusic.appxbundle" },
+                {"Windows Terminal", "WindowsTerminal.msixbundle" },
+                {"XML Notepad", "XMLNotepad.msixbundle" },
+            };
+
+            for(int i = 0; i < names.GetLength(0); ++i)
             {
-                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
-            }
+                Console.WriteLine(names[i, 0] + ":");
 
-            IoDSystemRestorePoint.SetStartPoint("Morphic Pre-Notepads");
+                msixpath = Path.Combine(basepath, "Installers", "MSIX", names[i, 1]);
+                msixInstall = new IoDMsiXInstaller(msixpath);
+                msixInstall.verbose = true;
 
-            Console.WriteLine("Notepads:");
+                var status = await msixInstall.InstallAsync();
 
-            msixpath = Path.Combine(basepath, "Installers", "MSIX", "Notepads.msixbundle");
-            msixInstall = new IoDMsiXInstaller(msixpath);
-            msixInstall.verbose = true;
-
-            status = await msixInstall.RunAsync();
-
-            if (status == IoDStatus.OK)
-            {
-                Console.WriteLine("Install Successful");
-            }
-            else
-            {
-                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
-            }
-
-            IoDSystemRestorePoint.SetStartPoint("Morphic Pre-Torrex");
-
-            Console.WriteLine("Torrex:");
-
-            msixpath = Path.Combine(basepath, "Installers", "MSIX", "Torrex.msix");
-            msixInstall = new IoDMsiXInstaller(msixpath);
-            msixInstall.verbose = true;
-
-            status = await msixInstall.RunAsync();
-
-            if (status == IoDStatus.OK)
-            {
-                Console.WriteLine("Install Successful");
-            }
-            else
-            {
-                Console.WriteLine("Installer Failed, Error " + status.inEnglish());
+                if (status.IsSuccess)
+                {
+                    Console.WriteLine("Install Successful");
+                }
+                else
+                {
+                    Console.WriteLine("Installer Failed, Error");
+                }
             }
 
             IoDSystemRestorePoint.SetStartPoint("Morphic After MSIXs");
