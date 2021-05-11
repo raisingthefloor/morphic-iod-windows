@@ -1,6 +1,6 @@
 ﻿using Microsoft.Deployment.WindowsInstaller;
+using Morphic.Core;
 using System;
-using System.Threading.Tasks;
 
 namespace Morphic.IoD
 {
