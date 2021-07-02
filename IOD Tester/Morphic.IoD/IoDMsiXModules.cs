@@ -22,14 +22,6 @@ namespace Morphic.IoD
             public ProgressEventArgs(double progress, DeploymentProgressState state) { this.progressVal = progress; this.progressState = state; }
         }
 
-        public class ErrorEventArgs : EventArgs
-        {
-            public MSIXErrorCode errorCode;
-            public string errorLog; //gives the verbose description for errors
-
-            public ErrorEventArgs(MSIXErrorCode code, string log) { this.errorCode = code; this.errorLog = log; }
-        }
-
         public enum MSIXErrorType
         {
             BadParams,  //INTERNAL ERROR: the parameters given are faulty
@@ -50,6 +42,7 @@ namespace Morphic.IoD
             InstallInvalidPackage,
             PackageUpdating,
             DeploymentBlockedByPolicy,
+            InstallPackageNotFound,
             InstallOutOfDiskSpace,
             InstallNetworkFailure,
             InstallRegistrationFailure,
@@ -123,12 +116,17 @@ namespace Morphic.IoD
             };
             package.Completed = (info, endStatus) =>
             {
+                System.Runtime.InteropServices.COMException? err;
                 switch (endStatus)
                 {
                     case Windows.Foundation.AsyncStatus.Canceled:
                         error = true;
                         form.type = MSIXErrorType.ManualHalt;
-                        form.errorCode = ParseCode(info.GetResults().ExtendedErrorCode.ToString());
+                        err = info.ErrorCode as System.Runtime.InteropServices.COMException;
+                        if (err != null)
+                        {
+                            form.errorCode = ParseCode((UInt32)err.ErrorCode);
+                        }
                         form.verboseLog = info.GetResults().ErrorText;
                         if (verbose)
                         {
@@ -139,7 +137,11 @@ namespace Morphic.IoD
                         break;
                     case Windows.Foundation.AsyncStatus.Error:
                         error = true;
-                        form.errorCode = ParseCode(info.GetResults().ExtendedErrorCode.ToString());
+                        err = info.ErrorCode as System.Runtime.InteropServices.COMException;
+                        if (err != null)
+                        {
+                            form.errorCode = ParseCode((UInt32)err.ErrorCode);
+                        }
                         form.verboseLog = info.GetResults().ErrorText;
                         form.type = InterpretErrorCode(form.errorCode);
                         if (verbose)
@@ -150,7 +152,11 @@ namespace Morphic.IoD
                     case Windows.Foundation.AsyncStatus.Started:
                         error = true;
                         form.type = MSIXErrorType.MiscFailure; //not sure how this would happen but hey
-                        form.errorCode = ParseCode(info.GetResults().ExtendedErrorCode.ToString());
+                        err = info.ErrorCode as System.Runtime.InteropServices.COMException;
+                        if (err != null)
+                        {
+                            form.errorCode = ParseCode((UInt32)err.ErrorCode);
+                        }
                         form.verboseLog = info.GetResults().ErrorText;
                         if (verbose)
                         {
@@ -191,12 +197,17 @@ namespace Morphic.IoD
             };
             package.Completed = (info, endStatus) =>
             {
+                System.Runtime.InteropServices.COMException? err;
                 switch (endStatus)
                 {
                     case Windows.Foundation.AsyncStatus.Canceled:
                         error = true;
                         form.type = MSIXErrorType.ManualHalt;
-                        form.errorCode = ParseCode(info.GetResults().ExtendedErrorCode.ToString());
+                        err = info.ErrorCode as System.Runtime.InteropServices.COMException;
+                        if (err != null)
+                        {
+                            form.errorCode = ParseCode((UInt32)err.ErrorCode);
+                        }
                         form.verboseLog = info.GetResults().ErrorText;
                         if (verbose)
                         {
@@ -207,7 +218,11 @@ namespace Morphic.IoD
                         break;
                     case Windows.Foundation.AsyncStatus.Error:
                         error = true;
-                        form.errorCode = ParseCode(info.GetResults().ExtendedErrorCode.ToString());
+                        err = info.ErrorCode as System.Runtime.InteropServices.COMException;
+                        if (err != null)
+                        {
+                            form.errorCode = ParseCode((UInt32)err.ErrorCode);
+                        }
                         form.verboseLog = info.GetResults().ErrorText;
                         form.type = InterpretErrorCode(form.errorCode);
                         if (verbose)
@@ -218,7 +233,11 @@ namespace Morphic.IoD
                     case Windows.Foundation.AsyncStatus.Started:
                         error = true;
                         form.type = MSIXErrorType.MiscFailure; //not sure how this would happen but hey
-                        form.errorCode = ParseCode(info.GetResults().ExtendedErrorCode.ToString());
+                        err = info.ErrorCode as System.Runtime.InteropServices.COMException;
+                        if (err != null)
+                        {
+                            form.errorCode = ParseCode((UInt32)err.ErrorCode);
+                        }
                         form.verboseLog = info.GetResults().ErrorText;
                         if (verbose)
                         {
@@ -246,97 +265,97 @@ namespace Morphic.IoD
         private int maxWait;
         private int currWait;
 
-        private MSIXErrorCode ParseCode(string msg)
+        private MSIXErrorCode ParseCode(UInt32 code)
         {
-            Regex pattern = new Regex("[(]0x........[)]");
-            var match = pattern.Match(msg);
-            var code = match.Value;
+            //if error codes fire but aren't here, look here https://docs.microsoft.com/en-us/windows/win32/com/com-error-codes
             switch(code)
             {
-                case "(0x80073CFB)":
-                    return MSIXErrorCode.PackageAlreadyExists;
-                case "(0x80073CF0)":
-                    return MSIXErrorCode.InstallOpenPackageFailed;
-                case "(0x80073CF2)":
-                    return MSIXErrorCode.InstallInvalidPackage;
-                case "(0x80073D00)":
-                    return MSIXErrorCode.PackageUpdating;
-                case "(0x80073D01)":
-                    return MSIXErrorCode.DeploymentBlockedByPolicy;
-                case "(0x80073CF4)":
-                    return MSIXErrorCode.InstallOutOfDiskSpace;
-                case "(0x80073CF5)":
-                    return MSIXErrorCode.InstallNetworkFailure;
-                case "(0x80073CF6)":
-                    return MSIXErrorCode.InstallRegistrationFailure;
-                case "(0x800700B)":
-                    return MSIXErrorCode.BadFormat;
-                case "(0x80073CF7)":
-                    return MSIXErrorCode.InstallDeregistrationFailure;
-                case "(0x80073CF8)":
-                    return MSIXErrorCode.InstallCancel;
-                case "(0x80073CF9)":
-                    return MSIXErrorCode.InstallFailed;
-                case "(0x80073CFA)":
-                    return MSIXErrorCode.RemoveFailed;
-                case "(0x80073CFC)":
-                    return MSIXErrorCode.NeedsRemediation;
-                case "(0x80073CFD)":
-                    return MSIXErrorCode.InstallPrerequisiteFailed;
-                case "(0x80073CFE)":
-                    return MSIXErrorCode.PackageRepositoryCorrupted;
-                case "(0x80073CFF)":
-                    return MSIXErrorCode.InstallPolicyFailure;
-                case "(0x80073D02)":
-                    return MSIXErrorCode.PackagesInUse;
-                case "(0x80073D03)":
-                    return MSIXErrorCode.RecoveryFileCorrupt;
-                case "(0x80073D04)":
-                    return MSIXErrorCode.InvalidStagedSignature;
-                case "(0x80073D05)":
-                    return MSIXErrorCode.DeletingExistingApplicationdataStoreFailed;
-                case "(0x80073D06)":
-                    return MSIXErrorCode.InstallPackageDowngrade;
-                case "(0x80073D07)":
-                    return MSIXErrorCode.SystemNeedsRemediation;
-                case "(0x80073D08)":
-                    return MSIXErrorCode.AppxIntegrityFailureExternal;
-                case "(0x80073D09)":
-                    return MSIXErrorCode.ResiliencyFileCorrupt;
-                case "(0x80073CF3)":
-                    return MSIXErrorCode.InstallResolveDependencyFailed;
-                case "(0x80070057)":
+                case 0x80070057:
                     return MSIXErrorCode.InvalidArg;
-                case "(0x80073D0A)":
+                case 0x80073CFB:
+                    return MSIXErrorCode.PackageAlreadyExists;
+                case 0x80073CF0:
+                    return MSIXErrorCode.InstallOpenPackageFailed;
+                case 0x80073CF2:
+                    return MSIXErrorCode.InstallInvalidPackage;
+                case 0x80073D00:
+                    return MSIXErrorCode.PackageUpdating;
+                case 0x80073D01:
+                    return MSIXErrorCode.DeploymentBlockedByPolicy;
+                case 0x80073CF1:
+                    return MSIXErrorCode.InstallPackageNotFound;
+                case 0x80073CF4:
+                    return MSIXErrorCode.InstallOutOfDiskSpace;
+                case 0x80073CF5:
+                    return MSIXErrorCode.InstallNetworkFailure;
+                case 0x80073CF6:
+                    return MSIXErrorCode.InstallRegistrationFailure;
+                case 0x800700B:
+                    return MSIXErrorCode.BadFormat;
+                case 0x80073CF7:
+                    return MSIXErrorCode.InstallDeregistrationFailure;
+                case 0x80073CF8:
+                    return MSIXErrorCode.InstallCancel;
+                case 0x80073CF9:
+                    return MSIXErrorCode.InstallFailed;
+                case 0x80073CFA:
+                    return MSIXErrorCode.RemoveFailed;
+                case 0x80073CFC:
+                    return MSIXErrorCode.NeedsRemediation;
+                case 0x80073CFD:
+                    return MSIXErrorCode.InstallPrerequisiteFailed;
+                case 0x80073CFE:
+                    return MSIXErrorCode.PackageRepositoryCorrupted;
+                case 0x80073CFF:
+                    return MSIXErrorCode.InstallPolicyFailure;
+                case 0x80073D02:
+                    return MSIXErrorCode.PackagesInUse;
+                case 0x80073D03:
+                    return MSIXErrorCode.RecoveryFileCorrupt;
+                case 0x80073D04:
+                    return MSIXErrorCode.InvalidStagedSignature;
+                case 0x80073D05:
+                    return MSIXErrorCode.DeletingExistingApplicationdataStoreFailed;
+                case 0x80073D06:
+                    return MSIXErrorCode.InstallPackageDowngrade;
+                case 0x80073D07:
+                    return MSIXErrorCode.SystemNeedsRemediation;
+                case 0x80073D08:
+                    return MSIXErrorCode.AppxIntegrityFailureExternal;
+                case 0x80073D09:
+                    return MSIXErrorCode.ResiliencyFileCorrupt;
+                case 0x80073CF3:
+                    return MSIXErrorCode.InstallResolveDependencyFailed;
+                case 0x80073D0A:
                     return MSIXErrorCode.InstallFirewallServiceNotRunning;
-                case "(0x800B0100)":
+                case 0x80080200:
+                    return MSIXErrorCode.AppxPackagingInternal;//The packaging API has encountered an internal error.
+                case 0x80080201:
+                    return MSIXErrorCode.AppxInterleavingNotAllowed;//The file is not a valid package because its contents are interleaved.
+                case 0x80080202:
+                    return MSIXErrorCode.AppxRelationshipsNotAllowed;//The file is not a valid package because it contains OPC relationships.
+                case 0x80080203:
+                    return MSIXErrorCode.AppxMissingRequiredFile;//The file is not a valid package because it is missing a manifest or block map, or missing a signature file when the code integrity file is present.
+                case 0x80080204:
+                    return MSIXErrorCode.AppxInvalidManifest;//The package's manifest is invalid.
+                case 0x80080205:
+                    return MSIXErrorCode.AppxInvalidBlockmap;//The package's block map is invalid.
+                case 0x80080206:
+                    return MSIXErrorCode.AppxCorruptContent;//The package's content cannot be read because it is corrupt.
+                case 0x80080207:
+                    return MSIXErrorCode.AppxBlockHashInvalid;//The computed hash value of the block does not match the one stored in the block map.
+                case 0x80080208:
+                    return MSIXErrorCode.AppxRequestedRangeTooLarge;//The requested byte range is over 4GB when translated to byte range of blocks.
+                case 0x80080209:
+                    return MSIXErrorCode.AppxInvalidSipClientData;//The SIP_SUBJECTINFO structure used to sign the package didn't contain the required data.
+                case 0x800B0100:
                     return MSIXErrorCode.TrustNoSignature;
-                case "(0x800B0109)":
+                case 0x800B0109:
                     return MSIXErrorCode.CertUntrustedRoot;
-                case "(0x800B010A)":
+                case 0x800B010A:
                     return MSIXErrorCode.CertChaining;
-                case "(0x80080209)":
-                    return MSIXErrorCode.AppxInvalidSipClientData;
-                case "(0x80080200)":
-                    return MSIXErrorCode.AppxPackagingInternal;
-                case "(0x80080201)":
-                    return MSIXErrorCode.AppxInterleavingNotAllowed;
-                case "(0x80080202)":
-                    return MSIXErrorCode.AppxRelationshipsNotAllowed;
-                case "(0x80080203)":
-                    return MSIXErrorCode.AppxMissingRequiredFile;
-                case "(0x80080204)":
-                    return MSIXErrorCode.AppxInvalidManifest;
-                case "(0x80080205)":
-                    return MSIXErrorCode.AppxInvalidBlockmap;
-                case "(0x80080206)":
-                    return MSIXErrorCode.AppxCorruptContent;
-                case "(0x80080207)":
-                    return MSIXErrorCode.AppxBlockHashInvalid;
-                case "(0x80080208)":
-                    return MSIXErrorCode.AppxRequestedRangeTooLarge;
                 default:
-                    Console.WriteLine("UNTRACKED ERROR: " + code);
+                    Console.WriteLine("UNTRACKED ERROR: 0x" + code.ToString("X8"));
                     return MSIXErrorCode.Unknown;
             }
         }
@@ -370,6 +389,7 @@ namespace Morphic.IoD
                 case MSIXErrorCode.DeploymentBlockedByPolicy:
                 case MSIXErrorCode.InstallDeregistrationFailure:
                 case MSIXErrorCode.InstallPackageDowngrade:
+                case MSIXErrorCode.InstallPackageNotFound:
                 case MSIXErrorCode.InstallPolicyFailure:
                 case MSIXErrorCode.InstallPrerequisiteFailed:
                 case MSIXErrorCode.InstallRegistrationFailure:

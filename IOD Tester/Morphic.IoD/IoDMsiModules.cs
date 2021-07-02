@@ -167,6 +167,12 @@ namespace Morphic.IoD
         private int progressPhase;
         private double progressWeight = 0.5;
 
+        public class ProgressEventArgs : EventArgs
+        {
+            public double progressVal;  //the % value of progress for the installation
+            public ProgressEventArgs(double progress) { this.progressVal = progress; }
+        }
+
         MessageResult UIMonitor(InstallMessage messageType, Record messageRecord, MessageButtons buttons, MessageIcon icon, MessageDefaultButton defaultButton)
         {
             MessageResult result = new MessageResult();
@@ -249,67 +255,63 @@ namespace Morphic.IoD
             return result;
         }
 
-        private void TrackProgress(Record messageRecord)
+        private void TrackProgress(Record message)
         {
-            if (messageRecord == null || messageRecord.FieldCount == 0)
+            if (message == null || message.FieldCount == 0)
             {
                 return;
             }
-
-            int fieldCount = messageRecord.FieldCount;
-            int progressType = messageRecord.GetInteger(1);
-            string progressTypeString = String.Empty;
-            switch (progressType)
+            switch (message.GetInteger(1))
             {
                 case 0: //progress reset
-                    if (fieldCount < 4)
+                    if (message.FieldCount < 4)
                     {
                         return;
                     }
                     this.progressPhase++;
-                    this.progressTotal = messageRecord.GetInteger(2);
+                    this.progressTotal = message.GetInteger(2);
                     if (this.progressPhase == 1)
                     {
                         //SHENANIGANS by Installer team
                         this.progressTotal += 50;
                     }
-                    this.progressMove = (messageRecord.GetInteger(3) == 0);
+                    this.progressMove = (message.GetInteger(3) == 0);
                     this.progressCompleted = (this.progressMove ? 0 : this.progressTotal);
                     this.enableActionData = false;
                     this.updateProgress();
                     break;
                 case 1:
-                    if (fieldCount < 3)
+                    if (message.FieldCount < 3)
                     {
                         return;
                     }
-                    if (messageRecord.GetInteger(3) == 0)
+                    if (message.GetInteger(3) == 0)
                     {
                         this.enableActionData = false;
                     }
                     else
                     {
                         this.enableActionData = true;
-                        this.progressStep = messageRecord.GetInteger(2);
+                        this.progressStep = message.GetInteger(2);
                     }
                     break;
                 case 2:
-                    if (fieldCount < 2 || this.progressTotal == 0 || this.progressPhase == 0)
+                    if (message.FieldCount < 2 || this.progressTotal == 0 || this.progressPhase == 0)
                     {
                         return;
                     }
                     if (this.progressMove)
                     {
-                        this.progressCompleted += messageRecord.GetInteger(2);
+                        this.progressCompleted += message.GetInteger(2);
                     }
                     else
                     {
-                        this.progressTotal -= messageRecord.GetInteger(2);
+                        this.progressTotal -= message.GetInteger(2);
                     }
                     this.updateProgress();
                     break;
                 case 3:
-                    this.progressTotal += messageRecord.GetInteger(2);
+                    this.progressTotal += message.GetInteger(2);
                     break;
             }
         }
